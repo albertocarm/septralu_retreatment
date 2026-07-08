@@ -65,13 +65,16 @@ figure2 <- function(data = load_septralu()) {
   key <- sub("=.*$", "", key)
   hr$label <- ifelse(key %in% names(labels), labels[key], hr$term)
   hr$label <- factor(hr$label, levels = rev(unique(hr$label)))
+  hr$hrtext <- sprintf("%.2f (%.2f–%.2f)", hr$HR, hr$low, hr$high)
 
   ggplot2::ggplot(hr, ggplot2::aes(x = HR, y = label)) +
     ggplot2::geom_vline(xintercept = 1, linetype = "dashed", colour = "grey50") +
     ggplot2::geom_pointrange(ggplot2::aes(xmin = low, xmax = high),
                              colour = "#2E5A87") +
+    ggplot2::geom_text(ggplot2::aes(x = high, label = hrtext),
+                       hjust = -0.12, size = 2.7, colour = "grey20") +
     ggplot2::facet_wrap(~ Endpoint) +
-    ggplot2::scale_x_log10() +
+    ggplot2::scale_x_log10(expand = ggplot2::expansion(mult = c(0.05, 0.6))) +
     ggplot2::labs(x = "Hazard ratio (95% CI)", y = NULL) +
     ggplot2::theme_minimal() +
     ggplot2::theme(panel.grid.minor = ggplot2::element_blank())
