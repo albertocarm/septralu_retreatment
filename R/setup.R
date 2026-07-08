@@ -59,7 +59,8 @@ add_model_covariates <- function(data) {
   data
 }
 
+## Parsimonious multivariable model (appropriate for the number of events):
+## proliferation (Ki-67), disease burden (metastatic sites), primary site, age, ECOG.
 cox_covariates <- c(
-  "retreatment_interval_months", "age", "sex",
-  "pet_ga_heterogeneity", "ki67_imputed", "primary_site_pancreas", "ecog_group"
+  "ki67_imputed", "n_metastatic_sites", "primary_site_pancreas", "age", "ecog_group"
 )

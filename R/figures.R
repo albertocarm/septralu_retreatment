@@ -43,23 +43,22 @@ figure2 <- function(data = load_septralu()) {
   dd <- rms::datadist(d[, cox_covariates]); on.exit(options(datadist = NULL))
   options(datadist = dd)
 
-  f_os <- rms::cph(survival::Surv(os_time, os_event) ~ retreatment_interval_months +
-    age + sex + pet_ga_heterogeneity + ki67_imputed + primary_site_pancreas +
-    ecog_group, data = d, x = TRUE, y = TRUE)
-  f_pfs <- rms::cph(survival::Surv(pfs_time, pfs_event) ~ retreatment_interval_months +
-    age + sex + pet_ga_heterogeneity + ki67_imputed + primary_site_pancreas +
-    ecog_group, data = d, x = TRUE, y = TRUE)
+  f_os <- rms::cph(survival::Surv(os_time, os_event) ~ ki67_imputed +
+    n_metastatic_sites + primary_site_pancreas + age + ecog_group,
+    data = d, x = TRUE, y = TRUE)
+  f_pfs <- rms::cph(survival::Surv(pfs_time, pfs_event) ~ ki67_imputed +
+    n_metastatic_sites + primary_site_pancreas + age + ecog_group,
+    data = d, x = TRUE, y = TRUE)
 
   os  <- extract_hazard_ratios(f_os);  os$Endpoint  <- "Overall survival"
   pfs <- extract_hazard_ratios(f_pfs); pfs$Endpoint <- "Progression-free survival"
   hr  <- rbind(os, pfs)
 
   labels <- c(
-    retreatment_interval_months = "Interval last I-PRRT to R-PRRT (IQR)",
-    age = "Age at re-treatment (IQR)", sex = "Sex (female vs male)",
-    pet_ga_heterogeneity = "68Ga-PET heterogeneity (yes vs no)",
     ki67_imputed = "Ki-67 index (IQR, 15 vs 3%)",
+    n_metastatic_sites = "No. of metastatic sites (IQR)",
     primary_site_pancreas = "Primary site (others vs pancreas)",
+    age = "Age at re-treatment (IQR)",
     ecog_group = "ECOG PS (2+ vs 0-1)")
   key <- sub(" -.*$", "", hr$term)
   key <- sub("=.*$", "", key)
