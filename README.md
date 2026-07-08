@@ -36,6 +36,10 @@ pre-computed intervals (in months) and analysis variables.
 | `tox_evaluable` | Toxicity data available |
 | `intercurrent_systemic_therapy` | Systemic antitumour therapy (chemotherapy/targeted/immunotherapy) started between the last I-PRRT and the first R-PRRT cycle (No / Yes) |
 | `treatment_before_rprrt` | Treatment immediately preceding R-PRRT (Direct from I-PRRT / SSA maintenance / Systemic antitumour line / Local-RT / Other) |
+| `iprrt_cycles` | Number of initial-PRRT cycles |
+| `cumulative_activity_gbq` | Cumulative administered activity across both courses (cycles × 7.4 GBq) |
+| `alkylating_exposure` | Any alkylating chemotherapy at any time (No / Yes) |
+| `therapy_related_myeloid_neoplasm` | Recorded therapy-related myeloid neoplasm — MDS/AML (No / Yes) |
 | `os_time`, `os_event` | Overall survival (months; 1 = death) |
 | `pfs_time`, `pfs_event` | Progression-free survival (months; 1 = progression or death) |
 
@@ -62,6 +66,7 @@ table3(data)              # Kaplan-Meier estimates by primary tumour site
 figure1(data)             # Overall and progression-free survival curves
 figure2(data)             # Forest plot of multivariable Cox models
 toxicity_table(data)      # Maximum toxicity grade per patient (CTCAE)
+myeloid_neoplasm_cases(data)  # Therapy-related myeloid neoplasm cases and characteristics
 ```
 
 Each `table*` function returns a table object or data frame; each `figure*`
