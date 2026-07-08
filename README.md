@@ -25,6 +25,7 @@ pre-computed intervals (in months) and analysis variables.
 | `retreatment_interval_months` | Interval from last I-PRRT cycle to first R-PRRT cycle |
 | `metastasis_to_retreatment_months` | Interval from metastasis diagnosis to R-PRRT |
 | `n_cycles` | Number of R-PRRT cycles (1–4) |
+| `cycle2_month`, `cycle3_month`, `cycle4_month` | Time from the first R-PRRT cycle to each subsequent cycle (months) |
 | `dose_reduced_c1` | Cycle 1 dose (Standard 7.4 GBq / Reduced) |
 | `discontinuation_reason` | Reason for discontinuation |
 | `recist` | RECIST 1.1 response (CR / PR / SD / PD / Non-evaluable) |
@@ -75,12 +76,15 @@ Rscript reproduce.R
 
 ```r
 cycles_analysis(data)     # Outcomes by number of R-PRRT cycles (2 vs 4)
+cycles_timedep(data)      # Number of cycles as a time-dependent covariate
 interval_analysis(data)   # Effect of the I-PRRT to R-PRRT interval
 ```
 
 `cycles_analysis()` compares survival and response between patients who received
 2 and 4 cycles. Because the number of cycles delivered depends on remaining
 progression-free (a patient cannot complete 4 cycles after early progression),
-these comparisons are subject to guarantee-time bias and are exploratory.
-`interval_analysis()` models the interval as a continuous predictor and by
-tertiles.
+a naive baseline comparison is subject to guarantee-time bias.
+`cycles_timedep()` addresses this by modelling the cumulative number of cycles
+received as a time-dependent covariate in a counting-process Cox model, and
+reports the naive estimate alongside for contrast. `interval_analysis()` models
+the interval as a continuous predictor and by tertiles.

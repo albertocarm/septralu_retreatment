@@ -55,6 +55,49 @@ cycles_analysis <- function(data = load_septralu()) {
   )
 }
 
+## Number of cycles modelled as a time-dependent covariate.
+## Cumulative cycles received change value at each cycle date, so a patient
+## contributes person-time under 1, then 2, ... cycles as they are delivered.
+## This removes the guarantee-time bias of the naive baseline comparison.
+cycles_timedep <- function(data = load_septralu()) {
+  load_dependencies()
+
+  fit_td <- function(time, event) {
+    base <- data.frame(id = seq_len(nrow(data)),
+                       T = data[[time]], E = data[[event]],
+                       t2 = data$cycle2_month, t3 = data$cycle3_month,
+                       t4 = data$cycle4_month)
+    base <- base[!is.na(base$T) & !is.na(base$E) & base$T > 0, ]
+    dt <- survival::tmerge(base, base, id = id, endpt = event(T, E))
+    dt <- survival::tmerge(dt, base, id = id, c2 = tdc(t2))
+    dt <- survival::tmerge(dt, base, id = id, c3 = tdc(t3))
+    dt <- survival::tmerge(dt, base, id = id, c4 = tdc(t4))
+    dt$n_cycles_received <- 1 + dt$c2 + dt$c3 + dt$c4
+    fit <- survival::coxph(
+      survival::Surv(tstart, tstop, endpt) ~ n_cycles_received, data = dt)
+    s <- summary(fit)
+    c(HR = round(s$conf.int[1, 1], 2), low = round(s$conf.int[1, 3], 2),
+      high = round(s$conf.int[1, 4], 2), p = round(s$coefficients[1, 5], 3),
+      patients = length(unique(dt$id)), events = sum(dt$endpt))
+  }
+
+  fit_naive <- function(time, event) {
+    s <- data[data$n_cycles %in% c(2, 4) & !is.na(data[[time]]), ]
+    s$g <- factor(ifelse(s$n_cycles == 4, "4", "2"))
+    fit <- survival::coxph(survival::Surv(s[[time]], s[[event]]) ~ g, data = s)
+    cf <- summary(fit)
+    c(HR = round(cf$conf.int[1, 1], 2), low = round(cf$conf.int[1, 3], 2),
+      high = round(cf$conf.int[1, 4], 2), p = round(cf$coefficients[1, 5], 3))
+  }
+
+  list(
+    timedep_os  = fit_td("os_time", "os_event"),
+    timedep_pfs = fit_td("pfs_time", "pfs_event"),
+    naive_os    = fit_naive("os_time", "os_event"),
+    naive_pfs   = fit_naive("pfs_time", "pfs_event")
+  )
+}
+
 ## Interval from last I-PRRT cycle to first R-PRRT cycle.
 interval_analysis <- function(data = load_septralu()) {
   load_dependencies()
