@@ -1,0 +1,64 @@
+## Shared setup: dependencies, data loading, labels and model helpers.
+
+required_packages <- c(
+  "survival", "rms", "gtsummary", "survminer", "ggplot2", "dplyr", "scales"
+)
+
+load_dependencies <- function() {
+  missing <- required_packages[!vapply(required_packages, requireNamespace,
+                                       logical(1), quietly = TRUE)]
+  if (length(missing)) {
+    stop("Missing packages: ", paste(missing, collapse = ", "),
+         "\nInstall with install.packages(c(",
+         paste(sprintf('\"%s\"', missing), collapse = ", "), "))")
+  }
+  invisible(lapply(required_packages, function(p)
+    suppressPackageStartupMessages(library(p, character.only = TRUE))))
+}
+
+load_septralu <- function(path = NULL) {
+  if (is.null(path)) {
+    candidates <- c("septralu_retreatment.rds",
+                    file.path("..", "septralu_retreatment.rds"))
+    path <- candidates[file.exists(candidates)][1]
+    if (is.na(path)) stop("septralu_retreatment.rds not found; pass 'path'.")
+  }
+  readRDS(path)
+}
+
+variable_labels <- list(
+  age                               = "Age at re-treatment, years",
+  sex                               = "Sex",
+  primary_site                      = "Primary tumour site",
+  ki67                              = "Ki-67 index, %",
+  grade                             = "WHO grade",
+  ecog                              = "ECOG PS",
+  functioning_tumor                 = "Functioning tumour",
+  peritoneal_mets                   = "Peritoneal metastases",
+  liver_mets                        = "Liver metastases",
+  pet_ga_heterogeneity              = "Intratumoural 68Ga-PET heterogeneity",
+  retreatment_interval_months       = "Interval from last I-PRRT to R-PRRT, months",
+  metastasis_to_retreatment_months  = "Interval from metastasis to R-PRRT, months",
+  n_cycles                          = "Number of R-PRRT cycles",
+  dose_reduced_c1                   = "Cycle 1 dose",
+  discontinuation_reason            = "Reason for discontinuation",
+  recist                            = "RECIST 1.1 response",
+  clinical_response                 = "Clinical response",
+  biochemical_response_cga          = "Biochemical response (chromogranin A)",
+  biochemical_response_secreted     = "Biochemical response (secreted substance)"
+)
+
+## Derived model covariates used in the multivariable Cox models.
+add_model_covariates <- function(data) {
+  data$ki67_imputed <- ifelse(is.na(data$ki67),
+                              mean(data$ki67, na.rm = TRUE), data$ki67)
+  data$ecog_group <- factor(
+    ifelse(as.numeric(as.character(data$ecog)) <= 1, "ECOG 0-1", "ECOG 2+"),
+    levels = c("ECOG 0-1", "ECOG 2+"))
+  data
+}
+
+cox_covariates <- c(
+  "retreatment_interval_months", "age", "sex",
+  "pet_ga_heterogeneity", "ki67_imputed", "primary_site_pancreas", "ecog_group"
+)
