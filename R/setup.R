@@ -36,6 +36,7 @@ variable_labels <- list(
   functioning_tumor                 = "Functioning tumour",
   peritoneal_mets                   = "Peritoneal metastases",
   liver_mets                        = "Liver metastases",
+  n_metastatic_sites                = "Number of metastatic sites",
   pet_ga_heterogeneity              = "Intratumoural 68Ga-PET heterogeneity",
   retreatment_interval_months       = "Interval from last I-PRRT to R-PRRT, months",
   metastasis_to_retreatment_months  = "Interval from metastasis to R-PRRT, months",
