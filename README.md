@@ -34,6 +34,7 @@ pre-computed intervals (in months) and analysis variables.
 | `tox_nausea`, `tox_vomiting`, `tox_urticaria`, `tox_hematologic`, `tox_nephrotoxicity`, `tox_other` | Maximum CTCAE grade per patient (0–4) |
 | `tox_overall_max` | Maximum toxicity grade across categories |
 | `tox_evaluable` | Toxicity data available |
+| `intercurrent_systemic_therapy` | Systemic antitumour therapy (chemotherapy/targeted/immunotherapy) started between the last I-PRRT and the first R-PRRT cycle (No / Yes) |
 | `os_time`, `os_event` | Overall survival (months; 1 = death) |
 | `pfs_time`, `pfs_event` | Progression-free survival (months; 1 = progression or death) |
 
@@ -77,7 +78,8 @@ Rscript reproduce.R
 ```r
 cycles_analysis(data)     # Outcomes by number of R-PRRT cycles (2 vs 4)
 cycles_timedep(data)      # Number of cycles as a time-dependent covariate
-interval_analysis(data)   # Effect of the I-PRRT to R-PRRT interval
+interval_analysis(data)   # Effect of the I-PRRT to R-PRRT interval (continuous, tertiles, cutpoints)
+sequence_analysis(data)   # Outcomes by intercurrent systemic therapy between courses
 ```
 
 `cycles_analysis()` compares survival and response between patients who received

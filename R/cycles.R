@@ -98,10 +98,45 @@ cycles_timedep <- function(data = load_septralu()) {
   )
 }
 
+## Systemic antitumour therapy given between the two PRRT courses.
+sequence_analysis <- function(data = load_septralu()) {
+  load_dependencies()
+  km <- function(time, event) {
+    d <- data[!is.na(data[[time]]), ]
+    fit <- survival::survfit(
+      survival::Surv(d[[time]], d[[event]]) ~ intercurrent_systemic_therapy, data = d)
+    s <- summary(fit)$table
+    sd <- survival::survdiff(
+      survival::Surv(d[[time]], d[[event]]) ~ intercurrent_systemic_therapy, data = d)
+    data.frame(Group = c("No", "Yes"), N = as.integer(s[, "records"]),
+               Events = as.integer(s[, "events"]), Median = round(s[, "median"], 1),
+               logrank_p = round(1 - stats::pchisq(sd$chisq, length(sd$n) - 1), 3),
+               row.names = NULL)
+  }
+  list(prevalence = table(data$intercurrent_systemic_therapy),
+       os = km("os_time", "os_event"), pfs = km("pfs_time", "pfs_event"))
+}
+
 ## Interval from last I-PRRT cycle to first R-PRRT cycle.
 interval_analysis <- function(data = load_septralu()) {
   load_dependencies()
   d <- data[!is.na(data$retreatment_interval_months), ]
+
+  cutpoint_row <- function(cut, time, event, label) {
+    dd <- d[!is.na(d[[time]]), ]
+    dd$g <- factor(ifelse(dd$retreatment_interval_months < cut, "short", "long"),
+                   levels = c("long", "short"))
+    sd <- survival::survdiff(survival::Surv(dd[[time]], dd[[event]]) ~ g, data = dd)
+    ci <- summary(survival::coxph(
+      survival::Surv(dd[[time]], dd[[event]]) ~ g, data = dd))$conf.int[1, c(1, 3, 4)]
+    data.frame(cutpoint = cut, endpoint = label, n_short = sum(dd$g == "short"),
+               HR_short_vs_long = round(ci[1], 2), low = round(ci[2], 2),
+               high = round(ci[3], 2),
+               logrank_p = round(1 - stats::pchisq(sd$chisq, 1), 3), row.names = NULL)
+  }
+  cutpoints <- do.call(rbind, unlist(lapply(c(12, 18, 24), function(cc)
+    list(cutpoint_row(cc, "os_time", "os_event", "OS"),
+         cutpoint_row(cc, "pfs_time", "pfs_event", "PFS"))), recursive = FALSE))
 
   cox_uni <- function(time, event) {
     dd <- rms::datadist(d[, "retreatment_interval_months", drop = FALSE])
@@ -128,6 +163,7 @@ interval_analysis <- function(data = load_septralu()) {
     cox_os  = cox_uni("os_time", "os_event"),
     cox_pfs = cox_uni("pfs_time", "pfs_event"),
     os_by_tertile  = km_summary("os_time", "os_event", d$interval_tertile, d),
-    pfs_by_tertile = km_summary("pfs_time", "pfs_event", d$interval_tertile, d)
+    pfs_by_tertile = km_summary("pfs_time", "pfs_event", d$interval_tertile, d),
+    cutpoints = cutpoints
   )
 }
