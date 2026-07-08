@@ -113,7 +113,8 @@ sequence_analysis <- function(data = load_septralu()) {
                logrank_p = round(1 - stats::pchisq(sd$chisq, length(sd$n) - 1), 3),
                row.names = NULL)
   }
-  list(prevalence = table(data$intercurrent_systemic_therapy),
+  list(treatment_before_rprrt = table(data$treatment_before_rprrt),
+       intercurrent_systemic = table(data$intercurrent_systemic_therapy),
        os = km("os_time", "os_event"), pfs = km("pfs_time", "pfs_event"))
 }
 

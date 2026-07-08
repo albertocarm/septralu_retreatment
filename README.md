@@ -35,6 +35,7 @@ pre-computed intervals (in months) and analysis variables.
 | `tox_overall_max` | Maximum toxicity grade across categories |
 | `tox_evaluable` | Toxicity data available |
 | `intercurrent_systemic_therapy` | Systemic antitumour therapy (chemotherapy/targeted/immunotherapy) started between the last I-PRRT and the first R-PRRT cycle (No / Yes) |
+| `treatment_before_rprrt` | Treatment immediately preceding R-PRRT (Direct from I-PRRT / SSA maintenance / Systemic antitumour line / Local-RT / Other) |
 | `os_time`, `os_event` | Overall survival (months; 1 = death) |
 | `pfs_time`, `pfs_event` | Progression-free survival (months; 1 = progression or death) |
 
