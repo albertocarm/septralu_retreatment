@@ -4,7 +4,8 @@
 table1 <- function(data = load_septralu()) {
   load_dependencies()
   vars <- c("age", "sex", "ki67", "grade", "ecog", "functioning_tumor",
-            "peritoneal_mets", "liver_mets", "pet_ga_heterogeneity",
+            "peritoneal_mets", "liver_mets", "n_metastatic_sites",
+            "pet_ga_heterogeneity",
             "metastasis_to_retreatment_months", "retreatment_interval_months")
   d <- data[, c("primary_site", vars)]
   d$primary_site <- factor(d$primary_site, levels = c("Pancreas", "Ileum", "Lung", "Other"))
@@ -13,6 +14,7 @@ table1 <- function(data = load_septralu()) {
     by = primary_site,
     label = variable_labels[vars],
     type = list(ki67 ~ "continuous",
+                n_metastatic_sites ~ "continuous",
                 retreatment_interval_months ~ "continuous",
                 metastasis_to_retreatment_months ~ "continuous"),
     statistic = list(gtsummary::all_continuous() ~ "{median} [{p25}, {p75}]",
