@@ -50,17 +50,29 @@ variable_labels <- list(
 )
 
 ## Derived model covariates used in the multivariable Cox models.
+## ECOG is modelled as an ordinal score (per 1-point increase). A 0-1 vs 2+
+## dichotomy is uninformative in this cohort, where only 6 patients have a
+## performance status above 1 and none above 2.
 add_model_covariates <- function(data) {
   data$ki67_imputed <- ifelse(is.na(data$ki67),
                               mean(data$ki67, na.rm = TRUE), data$ki67)
-  data$ecog_group <- factor(
-    ifelse(as.numeric(as.character(data$ecog)) <= 1, "ECOG 0-1", "ECOG 2+"),
-    levels = c("ECOG 0-1", "ECOG 2+"))
+  data$ecog_linear <- as.numeric(as.character(data$ecog))
   data
 }
 
 ## Parsimonious multivariable model (appropriate for the number of events):
-## proliferation (Ki-67), disease burden (metastatic sites), primary site, age, ECOG.
+## proliferation (Ki-67), performance status, disease burden (metastatic sites)
+## and primary tumour site.
 cox_covariates <- c(
-  "ki67_imputed", "n_metastatic_sites", "primary_site_pancreas", "age", "ecog_group"
+  "ki67_imputed", "ecog_linear", "n_metastatic_sites", "primary_site_pancreas"
 )
+
+## Reference distribution for the multivariable models. Continuous covariates are
+## contrasted over their interquartile range; ECOG is contrasted over a single
+## point, which is the clinically interpretable increment.
+model_datadist <- function(data) {
+  dd <- rms::datadist(data[, cox_covariates])
+  dd$limits["Low:effect",  "ecog_linear"] <- 0
+  dd$limits["High:effect", "ecog_linear"] <- 1
+  dd
+}

@@ -40,14 +40,14 @@ extract_hazard_ratios <- function(fit) {
 figure2 <- function(data = load_septralu()) {
   load_dependencies()
   d <- add_model_covariates(data)
-  dd <- rms::datadist(d[, cox_covariates]); on.exit(options(datadist = NULL))
+  dd <- model_datadist(d); on.exit(options(datadist = NULL))
   options(datadist = dd)
 
   f_os <- rms::cph(survival::Surv(os_time, os_event) ~ ki67_imputed +
-    n_metastatic_sites + primary_site_pancreas + age + ecog_group,
+    ecog_linear + n_metastatic_sites + primary_site_pancreas,
     data = d, x = TRUE, y = TRUE)
   f_pfs <- rms::cph(survival::Surv(pfs_time, pfs_event) ~ ki67_imputed +
-    n_metastatic_sites + primary_site_pancreas + age + ecog_group,
+    ecog_linear + n_metastatic_sites + primary_site_pancreas,
     data = d, x = TRUE, y = TRUE)
 
   os  <- extract_hazard_ratios(f_os);  os$Endpoint  <- "Overall survival"
@@ -56,10 +56,9 @@ figure2 <- function(data = load_septralu()) {
 
   labels <- c(
     ki67_imputed = "Ki-67 index (IQR, 15 vs 3%)",
+    ecog_linear = "ECOG PS (per 1-point increase)",
     n_metastatic_sites = "No. of metastatic sites (IQR)",
-    primary_site_pancreas = "Primary site (others vs pancreas)",
-    age = "Age at re-treatment (IQR)",
-    ecog_group = "ECOG PS (2+ vs 0-1)")
+    primary_site_pancreas = "Primary site (pancreas vs others)")
   key <- sub(" -.*$", "", hr$term)
   key <- sub("=.*$", "", key)
   hr$label <- ifelse(key %in% names(labels), labels[key], hr$term)

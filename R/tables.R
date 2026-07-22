@@ -91,3 +91,39 @@ table3 <- function(data = load_septralu()) {
     endpoint("pfs_time", "pfs_event", "Progression-free survival")
   )[, c("Endpoint", "Group", "N", "Events", "Median", "CI_low", "CI_high", "logrank_p")]
 }
+
+## Multivariable Cox models for OS and PFS (hazard ratios with IQR contrasts
+## for continuous covariates), together with model size, discrimination and the
+## global test of the proportional-hazards assumption.
+multivariable_cox <- function(data = load_septralu()) {
+  load_dependencies()
+  d <- add_model_covariates(data)
+  dd <- model_datadist(d); on.exit(options(datadist = NULL))
+  options(datadist = dd)
+
+  rhs <- paste(cox_covariates, collapse = " + ")
+  fit_one <- function(time, event, label) {
+    f <- rms::cph(stats::as.formula(sprintf("survival::Surv(%s, %s) ~ %s",
+                                            time, event, rhs)),
+                  data = d, x = TRUE, y = TRUE)
+    hr <- extract_hazard_ratios(f)
+    cx <- survival::coxph(stats::as.formula(sprintf("survival::Surv(%s, %s) ~ %s",
+                                                    time, event, rhs)), data = d)
+    hr$Endpoint <- label
+    hr$n        <- cx$n
+    hr$events   <- cx$nevent
+    hr$C_index  <- round(unname(summary(cx)$concordance[1]), 3)
+    hr$PH_global_p <- round(survival::cox.zph(cx)$table["GLOBAL", "p"], 3)
+    hr
+  }
+
+  res <- rbind(
+    fit_one("os_time",  "os_event",  "Overall survival"),
+    fit_one("pfs_time", "pfs_event", "Progression-free survival"))
+  res$HR   <- round(res$HR, 2)
+  res$low  <- round(res$low, 2)
+  res$high <- round(res$high, 2)
+  res$p    <- round(res$p, 4)
+  res[, c("Endpoint", "term", "HR", "low", "high", "p",
+          "n", "events", "C_index", "PH_global_p")]
+}
