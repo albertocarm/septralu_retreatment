@@ -63,6 +63,7 @@ data <- load_septralu()
 table1(data)              # Baseline characteristics by primary tumour site
 table2(data)              # Treatment response (RECIST, clinical, biochemical)
 table3(data)              # Kaplan-Meier estimates by primary tumour site
+multivariable_cox(data)   # Multivariable Cox models for OS and PFS
 figure1(data)             # Overall and progression-free survival curves
 figure2(data)             # Forest plot of multivariable Cox models
 toxicity_table(data)      # Maximum toxicity grade per patient (CTCAE)
@@ -72,6 +73,14 @@ myeloid_neoplasm_cases(data)  # Therapy-related myeloid neoplasm cases and chara
 Each `table*` function returns a table object or data frame; each `figure*`
 function returns a plot. `table2()` also reports the disease control and
 objective response rates.
+
+The multivariable models include the Ki-67 index, ECOG performance status, the
+number of metastatic sites and the primary tumour site. Hazard ratios for
+continuous covariates are reported over the interquartile range; ECOG is
+reported per 1-point increment, since only 6 patients have a performance status
+above 1 and none above 2, which makes a 0-1 versus 2+ dichotomy uninformative in
+this cohort. `multivariable_cox()` also returns the number of events, Harrell's
+C and the global test of the proportional-hazards assumption.
 
 To regenerate everything at once and write the figures to `output/`:
 
