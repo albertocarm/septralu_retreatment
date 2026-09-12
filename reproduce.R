@@ -11,20 +11,24 @@ t1 <- table1(data)
 t2 <- table2(data)
 t3 <- table3(data)
 mv <- multivariable_cox(data)
+sens <- sensitivity_table(data)
 tox <- toxicity_table(data)
 
 print(t3)
 print(mv)
+print_sensitivity_table(sens)
 print(tox)
 
 cyc <- cycles_analysis(data)
 int <- interval_analysis(data)
 
-ggplot2::ggsave("output/figure2.png", figure2(data), width = 10, height = 5, dpi = 300)
+ggplot2::ggsave("output/figure2.pdf", figure2(data, mv), width = 10, height = 3.39,
+                device = grDevices::cairo_pdf)
 png("output/figure1.png", width = 1200, height = 600, res = 120)
 figure1(data)
 dev.off()
 
 saveRDS(list(table1 = t1, table2 = t2, table3 = t3, multivariable = mv,
-             toxicity = tox, cycles = cyc, interval = int), "output/results.rds")
+             sensitivity = sens, toxicity = tox, cycles = cyc, interval = int),
+        "output/results.rds")
 message("Done. Figures written to output/.")

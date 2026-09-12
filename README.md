@@ -66,6 +66,7 @@ table3(data)              # Kaplan-Meier estimates by primary tumour site
 multivariable_cox(data)   # Multivariable Cox models for OS and PFS
 figure1(data)             # Overall and progression-free survival curves
 figure2(data)             # Forest plot of multivariable Cox models
+sensitivity_table(data)   # Sensitivity analyses for the multivariable Cox models
 toxicity_table(data)      # Maximum toxicity grade per patient (CTCAE)
 myeloid_neoplasm_cases(data)  # Therapy-related myeloid neoplasm cases and characteristics
 ```
@@ -75,12 +76,20 @@ function returns a plot. `table2()` also reports the disease control and
 objective response rates.
 
 The multivariable models include the Ki-67 index, ECOG performance status, the
-number of metastatic sites and the primary tumour site. Hazard ratios for
-continuous covariates are reported over the interquartile range; ECOG is
-reported per 1-point increment, since only 6 patients have a performance status
-above 1 and none above 2, which makes a 0-1 versus 2+ dichotomy uninformative in
-this cohort. `multivariable_cox()` also returns the number of events, Harrell's
-C and the global test of the proportional-hazards assumption.
+number of metastatic sites and the primary tumour site. The 17 missing Ki-67
+values are multiply imputed (`aregImpute`, 50 imputations; the imputation model
+includes the other covariates, WHO grade and the outcome) and the Cox models are
+combined with Rubin's rules (`fit.mult.impute`). Hazard ratios for continuous
+covariates are reported over the interquartile range; ECOG is reported per
+1-point increment, since only 6 patients have a performance status above 1 and
+none above 2, which makes a 0-1 versus 2+ dichotomy uninformative in this
+cohort. `multivariable_cox()` also returns the number of events, Harrell's C
+(averaged across imputations) and the global test of the proportional-hazards
+assumption (median p-value across imputations).
+
+`sensitivity_table()` refits the models in patients with observed Ki-67
+(complete-case analysis), with ECOG dichotomised (>= 1 vs 0), and excluding
+patients with an unknown primary site.
 
 To regenerate everything at once and write the figures to `output/`:
 

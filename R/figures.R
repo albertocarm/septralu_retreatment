@@ -24,45 +24,15 @@ figure1 <- function(data = load_septralu()) {
                                  print = TRUE)
 }
 
-## Extract hazard ratios (IQR contrasts for continuous covariates) from an rms cph fit.
-extract_hazard_ratios <- function(fit) {
-  s <- summary(fit)
-  hr <- s[s[, "Type"] == 2, c("Effect", "Lower 0.95", "Upper 0.95"), drop = FALSE]
-  co <- s[s[, "Type"] == 1, , drop = FALSE]
-  p  <- 2 * stats::pnorm(-abs(co[, "Effect"] / co[, "S.E."]))
-  data.frame(
-    term = rownames(co),
-    HR = hr[, "Effect"], low = hr[, "Lower 0.95"], high = hr[, "Upper 0.95"],
-    p = p, row.names = NULL)
-}
-
 ## Figure 2. Forest plot of multivariable Cox models for PFS and OS.
-figure2 <- function(data = load_septralu()) {
+figure2 <- function(data = load_septralu(), hr = multivariable_cox(data)) {
   load_dependencies()
-  d <- add_model_covariates(data)
-  dd <- model_datadist(d); on.exit(options(datadist = NULL))
-  options(datadist = dd)
-
-  f_os <- rms::cph(survival::Surv(os_time, os_event) ~ ki67_imputed +
-    ecog_linear + n_metastatic_sites + primary_site_pancreas,
-    data = d, x = TRUE, y = TRUE)
-  f_pfs <- rms::cph(survival::Surv(pfs_time, pfs_event) ~ ki67_imputed +
-    ecog_linear + n_metastatic_sites + primary_site_pancreas,
-    data = d, x = TRUE, y = TRUE)
-
-  os  <- extract_hazard_ratios(f_os);  os$Endpoint  <- "Overall survival"
-  pfs <- extract_hazard_ratios(f_pfs); pfs$Endpoint <- "Progression-free survival"
-  hr  <- rbind(os, pfs)
-
   labels <- c(
-    ki67_imputed = "Ki-67 index (IQR, 15 vs 3%)",
-    ecog_linear = "ECOG PS (per 1-point increase)",
+    ki67 = "Ki-67 index (IQR, 15 vs 2%)",
+    ecog = "ECOG PS (per 1-point increase)",
     n_metastatic_sites = "No. of metastatic sites (IQR)",
-    primary_site_pancreas = "Primary site (pancreas vs others)")
-  key <- sub(" -.*$", "", hr$term)
-  key <- sub("=.*$", "", key)
-  hr$label <- ifelse(key %in% names(labels), labels[key], hr$term)
-  hr$label <- factor(hr$label, levels = rev(unique(hr$label)))
+    pancreas = "Primary site (pancreas vs others)")
+  hr$label <- factor(labels[hr$term], levels = rev(labels))
   hr$hrtext <- sprintf("%.2f (%.2f–%.2f)", hr$HR, hr$low, hr$high)
 
   ggplot2::ggplot(hr, ggplot2::aes(x = HR, y = label)) +
