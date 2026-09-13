@@ -42,12 +42,18 @@ variable_labels <- list(
   metastasis_to_retreatment_months  = "Interval from metastasis to R-PRRT, months",
   n_cycles                          = "Number of R-PRRT cycles",
   dose_reduced_c1                   = "Cycle 1 dose",
-  discontinuation_reason            = "Reason for discontinuation",
+  discontinuation_reason            = "Reason for end of treatment",
   recist                            = "RECIST 1.1 response",
   clinical_response                 = "Clinical response",
   biochemical_response_cga          = "Biochemical response (chromogranin A)",
   biochemical_response_secreted     = "Biochemical response (secreted substance)"
 )
+
+## Patients with a recorded RECIST category. Response rates are computed among
+## these; in the remaining patients the registry holds no response category.
+recist_assessed <- function(data) {
+  data[!is.na(data$recist) & data$recist != "Not recorded", ]
+}
 
 ## Parsimonious multivariable model (appropriate for the number of events):
 ## proliferation (Ki-67), performance status, disease burden (metastatic sites)

@@ -41,10 +41,10 @@ table2 <- function(data = load_septralu()) {
     gtsummary::modify_header(label ~ "**Response**") |>
     gtsummary::bold_labels()
 
-  ev  <- data$recist[!is.na(data$recist)]
+  ev  <- recist_assessed(data)$recist
   dcr <- mean(ev %in% c("CR", "PR", "SD")) * 100
   orr <- mean(ev %in% c("CR", "PR")) * 100
-  message(sprintf("Evaluable n = %d | DCR = %.1f%% | ORR = %.1f%%",
+  message(sprintf("Assessed n = %d | DCR = %.1f%% | ORR = %.1f%%",
                   length(ev), dcr, orr))
   tbl
 }

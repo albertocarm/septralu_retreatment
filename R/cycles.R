@@ -30,7 +30,7 @@ cycles_analysis <- function(data = load_septralu()) {
   two_four$cycles <- droplevels(two_four$cycles)
 
   response_by_group <- function(df) {
-    ev <- df[!is.na(df$recist), ]
+    ev <- recist_assessed(df)
     tab <- tapply(ev$recist, droplevels(ev$cycles), function(r)
       c(n = length(r),
         DCR = round(mean(r %in% c("CR", "PR", "SD")) * 100, 1),
@@ -38,7 +38,7 @@ cycles_analysis <- function(data = load_septralu()) {
     do.call(rbind, tab)
   }
   chisq_dcr <- function(df) {
-    ev <- df[!is.na(df$recist), ]
+    ev <- recist_assessed(df)
     dcr <- ev$recist %in% c("CR", "PR", "SD")
     suppressWarnings(stats::chisq.test(table(droplevels(ev$cycles), dcr))$p.value)
   }

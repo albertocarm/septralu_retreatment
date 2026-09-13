@@ -27,8 +27,8 @@ pre-computed intervals (in months) and analysis variables.
 | `n_cycles` | Number of R-PRRT cycles (1–4) |
 | `cycle2_month`, `cycle3_month`, `cycle4_month` | Time from the first R-PRRT cycle to each subsequent cycle (months) |
 | `dose_reduced_c1` | Cycle 1 dose (Standard 7.4 GBq / Reduced) |
-| `discontinuation_reason` | Reason for discontinuation |
-| `recist` | RECIST 1.1 response (CR / PR / SD / PD / Non-evaluable) |
+| `discontinuation_reason` | Reason for end of treatment (course completed / progression / toxicity / death / patient decision / lost to follow-up / ongoing; `NA` = no cycle-level tracking) |
+| `recist` | RECIST 1.1 response (CR / PR / SD / PD / Not recorded) |
 | `clinical_response` | Clinical response |
 | `biochemical_response_cga`, `biochemical_response_secreted` | Biochemical response |
 | `tox_nausea`, `tox_vomiting`, `tox_urticaria`, `tox_hematologic`, `tox_nephrotoxicity`, `tox_other` | Maximum CTCAE grade per patient (0–4) |
@@ -73,7 +73,7 @@ myeloid_neoplasm_cases(data)  # Therapy-related myeloid neoplasm cases and chara
 
 Each `table*` function returns a table object or data frame; each `figure*`
 function returns a plot. `table2()` also reports the disease control and
-objective response rates.
+objective response rates among the patients with a recorded RECIST category.
 
 The multivariable models include the Ki-67 index, ECOG performance status, the
 number of metastatic sites and the primary tumour site. The 17 missing Ki-67
